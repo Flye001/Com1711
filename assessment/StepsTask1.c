@@ -11,7 +11,7 @@ typedef struct
 } FITNESS_DATA;
 
 // Define any additional variables here
-const char SOURCE_FILENAME[] = "FitnessData_2023.csv";
+char SOURCE_FILENAME[] = "FitnessData_2023.csv";
 
 // This is your helper function. Do not change it in any way.
 // Inputs: character array representing a row; the delimiter character
