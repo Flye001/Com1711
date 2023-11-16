@@ -19,18 +19,16 @@ int main()
 
     char choice;
     int counter = 0;
-    float mean = 0;
+
+    // Read the data file into the array
+    FILE *input = open_file(filename, "r");
+    read_file(input, daily_readings, &counter);
+    fclose(input);
+    const int NUM_OF_RECORDS = counter;
 
     while (1)
     {
-        FILE *input = fopen(filename, "r");
-        if (!input)
-        {
-            printf("Error: File could not be opened\n");
-            return 1;
-        }
-
-        printf("A: View all your blood iron levels\n");                       // BRONZE
+        printf("\nA: View all your blood iron levels\n");                     // BRONZE
         printf("B: View your average blood iron level\n");                    // BRONZE
         printf("C: View your lowest blood iron level\n");                     // SILVER
         printf("D: View your highest blood iron level\n");                    // SILVER
@@ -44,8 +42,8 @@ int main()
 
         // this gets rid of the newline character which the user will enter
         // as otherwise this will stay in the stdin and be read next time
-        while (getchar() != '\n');
-
+        while (getchar() != '\n')
+            ;
 
         // switch statement to control the menu.
         switch (choice)
@@ -53,55 +51,32 @@ int main()
         // this allows for either capital or lower case
         case 'A':
         case 'a':
-            counter = 0;
-            while (fgets(line, buffer_size, input))
-            {
-                // split up the line and store it in the right place
-                // using the & operator to pass in a pointer to the bloodIron so it stores it
-                tokeniseRecord(line, ",", daily_readings[counter].date, &daily_readings[counter].bloodIron);
-                counter++;
-            }
-            for (int i = 0; i < counter; i++)
-            {
-                printf("%s - Blood iron: %.1f\n", daily_readings[i].date, daily_readings[i].bloodIron);
-            }
-            fclose(input);
+            display_records(daily_readings, NUM_OF_RECORDS);
             break;
 
         case 'B':
         case 'b':
-            counter = 0;
-            while (fgets(line, buffer_size, input))
-            {
-                // split up the line and store it in the right place
-                // using the & operator to pass in a pointer to the bloodIron so it stores it
-                tokeniseRecord(line, ",", daily_readings[counter].date, &daily_readings[counter].bloodIron);
-                mean += daily_readings[counter].bloodIron;
-                counter++;
-            }
-            mean /= counter;
-            printf("Your average blood iron was %.2f\n", mean);
-            fclose(input);
+            printf("\nYour average blood iron was %.2f\n", find_mean(daily_readings, NUM_OF_RECORDS));
             break;
 
         case 'C':
         case 'c':
-            return 0;
+            printf("\nYour lowest is %.2f!\n", find_lowest(daily_readings, NUM_OF_RECORDS));
             break;
 
         case 'D':
         case 'd':
-            return 0;
+            printf("\nYour highest is %.2f!\n", find_highest(daily_readings, NUM_OF_RECORDS));
             break;
 
         case 'E':
         case 'e':
-            return 0;
+            monthly_iron(daily_readings, NUM_OF_RECORDS);
             break;
 
         case 'F':
         case 'f':
-            return 0;
+            additional_stats(daily_readings, NUM_OF_RECORDS);
             break;
 
         case 'G':

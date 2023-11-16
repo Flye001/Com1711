@@ -62,7 +62,13 @@ void tokeniseRecord(const char *input, const char *delimiter,
  */
 FILE *open_file(char *filename, char *mode)
 {
-    // to do
+    FILE *input = fopen(filename, mode);
+    if (!input)
+    {
+        printf("Error: File could not be opened\n");
+        exit(1);
+    }
+    return input;
 }
 
 /**
@@ -70,11 +76,19 @@ FILE *open_file(char *filename, char *mode)
  *
  * @param inputFile the open file object
  * @param dataArray the array of readings
+ * @param counter a counter that will return number of items
  * @return int Returns the number of readings from the file
  */
-int read_file(FILE *inputFile, reading *dataArray)
+int read_file(FILE *inputFile, reading *dataArray, int *counter)
 {
-    // to do
+    char line[buffer_size];
+    while (fgets(line, buffer_size, inputFile))
+    {
+        // split up the line and store it in the right place
+        // using the & operator to pass in a pointer to the bloodIron so it stores it
+        tokeniseRecord(line, ",", dataArray[*counter].date, &dataArray[*counter].bloodIron);
+        *counter += 1;
+    }
 }
 
 /**
@@ -89,51 +103,115 @@ int data_checker(reading *dataArray, int numReadings)
     // to do
 }
 
+/**
+ * @brief Display all data records
+ * @param dataArray The array of data from the file
+ * @param numReadings The number of readings in the array
+ */
+void display_records(reading *dataArray, int numReadings)
+{
+    for (int i = 0; i < numReadings; i++)
+    {
+        printf("%s - Blood iron: %.1f\n", dataArray[i].date, dataArray[i].bloodIron);
+    }
+}
 
 /**
  * @brief Calculates and returns the mean of the readings in the array
- * 
+ *
  * @param dataArray The array of data from the file
  * @param numReadings The number of readings in the array
  * @return float The mean of the readings.
  */
-float find_mean(reading* dataArray, int numReadings)
+float find_mean(reading *dataArray, int numReadings)
 {
-    // to do
+    float sum = 0;
+    for (int i = 0; i < numReadings; i++)
+    {
+        sum += dataArray[i].bloodIron;
+    }
+    return sum / numReadings;
 }
 
 /**
  * @brief Finds and returns the highest blood iron reading
- * 
+ *
  * @param dataArray The array of data from the file
  * @param numReadings The number of readings in the array
  * @return float The highest blood iron reading
  */
-float find_highest(reading* dataArray, int numReadings)
+float find_highest(reading *dataArray, int numReadings)
 {
-    // to do
+    float highest = 0;
+    for (int i = 0; i < numReadings; i++)
+    {
+        if (dataArray[i].bloodIron > highest)
+            highest = dataArray[i].bloodIron;
+    }
+    return highest;
 }
 
 /**
  * @brief Finds and returns the lowest blood iron reading
- * 
+ *
  * @param dataArray The array of data from the file
  * @param numReadings The number of readings in the array
  * @return float The lowest blood iron reading
  */
-float find_lowest(reading* dataArray, int numReadings)
+float find_lowest(reading *dataArray, int numReadings)
 {
-    // to do
+    float lowest = 100000;
+    for (int i = 0; i < numReadings; i++)
+    {
+        if (dataArray[i].bloodIron < lowest)
+            lowest = dataArray[i].bloodIron;
+    }
+    return lowest;
 }
-
 
 /**
  * @brief Ask the user for the month to find, and then print out all readings containing that month.
- * 
+ *
  * @param dataArray The array of data from the file
  * @param numReadings The number of readings in the array
  */
-void monthly_iron(reading* dataArray, int numReadings)
+void monthly_iron(reading *dataArray, int numReadings)
 {
-    // to do
+    char month[4];
+    printf("Enter a month (e.g. SEP, OCT): ");
+    scanf("%s", month);
+
+    char *strPtr;
+    for (int i = 0; i < numReadings; i++)
+    {
+        strPtr = strstr(dataArray[i].date, month);
+        if (strPtr != NULL)
+        {
+            printf("%s - Blood iron: %.1f\n", dataArray[i].date, dataArray[i].bloodIron);
+        }
+    }
+}
+
+/**
+ * @brief Generate additional statistics about the data
+ *
+ * @param dataArray The array of data from the file
+ * @param numReadings The number of readings in the array
+ */
+void additional_stats(reading *dataArray, int numReadings)
+{
+    float range = find_highest(dataArray, numReadings) - find_lowest(dataArray, numReadings);
+    float mean = find_mean(dataArray, numReadings);
+    float variance_sum = 0;
+    for (int i = 0; i < numReadings; i++) {
+        variance_sum += powf((dataArray[i].bloodIron - mean), 2);
+    }
+    float varience = variance_sum / numReadings;
+    float stdDev = sqrtf(varience);
+    float median = dataArray[numReadings / 2].bloodIron;
+
+    printf("Range: %.2f\n", range);
+    printf("Mean: %.2f\n", mean);
+    printf("Standard Deviation: %.2f\n", stdDev);
+    printf("Median: %.2f\n", median);
 }
