@@ -119,9 +119,9 @@ void bubble_sort(FitnessData *data_array) {
         passes = 0;
         for (int i=0; i < number_of_records - 1; i++) {
             if (data_array[i].steps < data_array[i+1].steps) {
-                int temp = data_array[i].steps;
-                data_array[i].steps = data_array[i+1].steps;
-                data_array[i+1].steps = temp;
+                FitnessData temp = data_array[i];
+                data_array[i] = data_array[i+1];
+                data_array[i+1] = temp;
                 passes ++;
             }
         }
