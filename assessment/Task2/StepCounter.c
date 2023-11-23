@@ -11,6 +11,15 @@ char SOURCE_FILENAME[100] = "FitnessData_2023.csv";
 FILE *dataFile;
 int size;
 
+// Source: https://stackoverflow.com/questions/31298732/rounding-float-to-nearest-integer-in-c
+int round_near(float b)
+{
+    if ((b - (int)b) < 0.5)
+        return (int)b;
+    else
+        return (int)b + 1;
+}
+
 // This is your helper function. Do not change it in any way.
 // Inputs: character array representing a row; the delimiter character
 // Ouputs: date character array; time character array; steps character array
@@ -143,14 +152,16 @@ void mean_steps()
     parse_fitness_data(records);
     fclose(dataFile);
 
-    int step_sum = 0;
+    float step_sum = 0;
     for (int i = 0; i < size; i++)
     {
         step_sum += records[i].steps;
     }
-    int mean = step_sum / size;
+    float mean = step_sum / size;
+    // mean = 11.9;
+    int output = round_near(mean);
 
-    printf("Mean step count: %d\n", mean);
+    printf("Mean step count: %d\n", output);
 }
 
 void longest_period()
@@ -164,43 +175,65 @@ void longest_period()
 
     int current_start = 0;
     int current_length = 0;
-    int currently_over_500 = 1;
+    int currently_over_500 = 0;
 
     int longest_start = 0;
     int longest_length = 0;
 
+    // printf("Size: %d\n", size); // DEBUG
+
     for (int i = 0; i < size; i++)
     {
+        // printf("Steps: %d\n", records[i].steps); // DEBUG
         // Record has over 500 steps
         if (records[i].steps > 500)
         {
             // Currently in a period of over 500
-            if (currently_over_500 == 0) {
+            if (currently_over_500 == 1)
+            {
                 current_length++;
                 // printf("Streak is %d\n", current_length);
             }
             // Start a new period of over 500
-            else {
+            else
+            {
+                // printf("Starting new period of 500 at: %s %s\n", records[i].date, records[i].time); // Debug
                 current_start = i;
-                current_length = 1;
-                currently_over_500 = 0;
+                current_length = 0;
+                currently_over_500 = 1;
             }
         }
         // Record has under 500 steps
-        else {
+        else
+        {
             // Was in a period of over 500
-            if (currently_over_500 == 0) {
-                if (current_length > longest_length) {
+            if (currently_over_500 == 1)
+            {
+                if (current_length > longest_length)
+                {
                     longest_start = current_start;
                     longest_length = current_length;
-                    currently_over_500 = 1;
                 }
+                current_start = 0;
+                current_length = 0;
+                currently_over_500 = 0;
             }
             // Was not in a period of over 500
-            // DO nothing...
+            // DO nothing
         }
     }
-    longest_length -= 1;
+    if (currently_over_500 == 1)
+    {
+        if (current_length > longest_length)
+        {
+            longest_start = current_start;
+            longest_length = current_length;
+        }
+        current_start = 0;
+        current_length = 0;
+        currently_over_500 = 0;
+    }
+    // longest_length -= 1;
     printf("Longest period start: %s %s\n", records[longest_start].date, records[longest_start].time);
     printf("Longest period end: %s %s\n", records[longest_start + longest_length].date, records[longest_start + longest_length].time);
 }

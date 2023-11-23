@@ -16,7 +16,7 @@ int number_of_records = 0;
 FILE *dataFile;
 
 // Function to tokenize a record
-void tokeniseRecord(const char *input, const char *delimiter,
+int tokeniseRecord(const char *input, const char *delimiter,
                     char *date, char *time, char *steps)
 {
     // Create a copy of the input string as strtok modifies the string
@@ -28,21 +28,25 @@ void tokeniseRecord(const char *input, const char *delimiter,
     {
         strcpy(date, token);
     }
+    else return 1;
 
     token = strtok(NULL, delimiter);
     if (token != NULL)
     {
         strcpy(time, token);
     }
+    else return 1;
 
     token = strtok(NULL, delimiter);
     if (token != NULL)
     {
         strcpy(steps, token);
     }
+    else return 1;
 
     // Free the duplicated string
     free(inputCopy);
+    return 0;
 }
 
 FILE *open_file(char fname[], char mode[])
@@ -95,7 +99,11 @@ void parse_data(FitnessData *data_array)
     while (fgets(buffer, buffer_size, dataFile) != NULL)
     {
         char steps[10];
-        tokeniseRecord(buffer, ",", data_array[line].date, data_array[line].time, steps);
+        int res = tokeniseRecord(buffer, ",", data_array[line].date, data_array[line].time, steps);
+        if (res != 0) {
+            printf("Invalid data file!\n");
+            exit(1);
+        }
         data_array[line].steps = atoi(steps);
 
         // printf("%s %s: %d\n", data_array[line].date, data_array[line].time, data_array[line].steps);
@@ -131,7 +139,6 @@ void display_records(FitnessData *data_array) {
 }
 
 void save_to_tsv(FitnessData *data_array) {
-   ;
     FILE *tsv_file = open_file(strcat(filename, ".tsv"), "w");
 
     for (int i = 0; i < number_of_records; i ++) {
